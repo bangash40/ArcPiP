@@ -270,6 +270,10 @@ in the same window.
   and never throws into the page, but a hostile page could still interfere with it on that page.
 - **Keyboard shortcut conflicts.** If another extension already uses `Alt+P`, Chrome leaves ArcPiP's shortcut
   unassigned. Set one at `chrome://extensions/shortcuts`.
+- **The mini player is its own window.** Chrome opens Picture-in-Picture as a separate small window, so Windows shows
+  it in the taskbar preview and Alt+Tab as "Picture-in-picture", next to your main Chrome window. Chrome owns that
+  window and doesn't let extensions change how it appears there (YouTube's own PiP button looks the same). It goes
+  away when you return to the tab or close the player.
 - **Other Chromium browsers** (Edge, Brave, …) may ship automatic PiP differently or not at all.
 
 ## Packaging for the Chrome Web Store
