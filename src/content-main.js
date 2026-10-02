@@ -274,6 +274,10 @@
 
     // Arc behaviour: a paused video stays put.
     if (!isPlaying(video)) return undefined;
+    // Chrome only auto-PiPs audible media for playback. A muted video here means
+    // Chrome fired for another reason (e.g. a video call on Meet): let the site
+    // handle it with its own handler instead of popping out a muted tile.
+    if (!isAudible(video)) return delegateToSite('enterpictureinpicture', details);
     if (cfg.skipAds && isAdPlaying(video)) {
       log('ad playing; not popping out');
       return undefined;
@@ -427,12 +431,14 @@
     }
 
     const playing = isPlaying(activeVideo);
+    const muted = playing && !isAudible(activeVideo);
     const state = {
       type: 'state',
       top: IS_TOP,
       hasVideo: !!activeVideo,
       playing,
-      armed: registered && playing && !unsupported.has('enterpictureinpicture') &&
+      muted,
+      armed: registered && playing && !muted && !unsupported.has('enterpictureinpicture') &&
         !(cfg.skipAds && activeVideo && isAdPlaying(activeVideo)),
       inPip: !!pipElement(),
       score: Math.round(score),

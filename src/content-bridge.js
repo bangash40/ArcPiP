@@ -86,6 +86,7 @@
       top: b(msg.top),
       hasVideo: b(msg.hasVideo),
       playing: b(msg.playing),
+      muted: b(msg.muted),
       armed: b(msg.armed),
       inPip: b(msg.inPip),
       score: Number.isFinite(msg.score) && msg.score >= 0 ? Math.min(msg.score, 1e9) : 0,

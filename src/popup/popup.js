@@ -73,6 +73,10 @@
       setStatus('pip', 'Playing in Picture-in-Picture', 'Come back to this tab and it pops back in.');
     } else if (info.armed) {
       setStatus('armed', 'Armed', 'Switch tabs and this video pops out.');
+    } else if (info.muted) {
+      setStatus('warn', 'Video is muted', 'Chrome only pops out videos that are playing with sound.');
+    } else if (info.topPlaying) {
+      setStatus('idle', 'Playing, not armed', 'An ad may be showing, or auto-PiP isn\'t supported by this Chrome version.');
     } else if (info.playing) {
       setStatus('warn', 'Video playing in an embedded player', 'Chrome only auto-pops videos in the main page. Use "Pop out now".');
     } else if (info.hasVideo) {

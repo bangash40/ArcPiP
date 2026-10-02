@@ -65,11 +65,16 @@ S.onChange((next) => {
 
 function summarizeTab(tabId) {
   const frames = tabFrames.get(tabId);
-  const out = { armed: false, playing: false, hasVideo: false, inPip: false, frames: 0 };
+  const out = { armed: false, playing: false, muted: false, topPlaying: false, hasVideo: false, inPip: false, frames: 0 };
   if (!frames) return out;
   for (const [frameId, s] of frames) {
     out.frames++;
-    if (frameId === 0 && s.armed) out.armed = true; // Chrome only auto-PiPs the top frame
+    if (frameId === 0) {
+      // Chrome only auto-PiPs media in the top frame.
+      if (s.armed) out.armed = true;
+      if (s.playing) out.topPlaying = true;
+      if (s.muted) out.muted = true;
+    }
     if (s.playing) out.playing = true;
     if (s.hasVideo) out.hasVideo = true;
     if (s.inPip) out.inPip = true;
@@ -172,6 +177,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         top: s.top === true,
         hasVideo: s.hasVideo === true,
         playing: s.playing === true,
+        muted: s.muted === true,
         armed: s.armed === true,
         inPip: s.inPip === true,
         score: Number(s.score) || 0,
