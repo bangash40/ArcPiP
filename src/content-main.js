@@ -55,6 +55,8 @@
   const REAPPLY_INTERVAL_MS = 4000;
   const POSITION_THROTTLE_MS = 1000;
   const SHADOW_SCAN_MIN_INTERVAL_MS = 2000;
+  const RETURN_EXIT_DELAY_MS = 350;
+  const FRAME_CHECK_MS = 1000;
 
   const IS_TOP = (() => {
     try { return window.top === window; } catch { return false; }
@@ -72,6 +74,9 @@
 
   /** The video ArcPiP itself put into PiP (auto handler), so we know to close it. */
   let openedByUs = null;
+
+  /** Video that just left an auto-opened PiP window; verify it renders again. */
+  let needsFrameCheck = null;
 
   /** Whether our handlers are currently installed on navigator.mediaSession. */
   let registered = false;
@@ -384,7 +389,13 @@
   });
 
   const onLeavePiP = safe(function onLeavePiP(e) {
-    if (e.target === openedByUs) openedByUs = null;
+    // Whoever closed it (Chrome on tab return, the user, or us), make sure the
+    // inline video actually renders again once the tab is visible.
+    if (e.target === openedByUs) {
+      openedByUs = null;
+      needsFrameCheck = e.target;
+    }
+    if (needsFrameCheck === e.target && document.visibilityState === 'visible') checkFramesAfterPip(e.target);
     scheduleRefresh();
   });
 
@@ -554,16 +565,56 @@
   // Return to tab: close the PiP window we opened, keep the video playing
   // ---------------------------------------------------------------------------
 
+  /**
+   * After a PiP window closes, Chrome can leave the inline video without
+   * frames (audio keeps playing, picture stays blank) — e.g. when the hidden
+   * tab's video track was suspended. If the video is playing but no frame is
+   * presented within FRAME_CHECK_MS, re-seek in place: that forces a fresh
+   * keyframe decode, which restores the picture without losing position.
+   */
+  function checkFramesAfterPip(video) {
+    needsFrameCheck = null;
+    if (typeof video.requestVideoFrameCallback !== 'function') return;
+    log('left PiP; checking the inline video renders');
+    let presented = false;
+    let handle = 0;
+    try {
+      handle = video.requestVideoFrameCallback(() => { presented = true; });
+    } catch {
+      return;
+    }
+    setTimeout(safe(() => {
+      if (presented) return;
+      try { video.cancelVideoFrameCallback(handle); } catch {}
+      if (!video.isConnected || !isPlaying(video) || document.visibilityState !== 'visible') return;
+      if (pipElement() === video) return;
+      const r = video.getBoundingClientRect();
+      if (r.bottom <= 0 || r.top >= window.innerHeight || r.width < 1) return; // offscreen videos don't present frames
+      log('no frames after leaving PiP; re-seeking to restore the picture');
+      video.currentTime = video.currentTime;
+    }), FRAME_CHECK_MS);
+  }
+
   const onVisibilityChange = safe(function onVisibilityChange() {
     scheduleRefresh();
-    if (document.visibilityState !== 'visible' || !cfg || !cfg.closeOnReturn) return;
-    const el = pipElement();
-    if (!el || el !== openedByUs) return;
-    const wasPlaying = !el.paused;
-    openedByUs = null;
-    reflectApply(nativeExitPiP, document, []).then(() => {
-      if (wasPlaying && el.paused && el.isConnected) el.play().catch(() => {});
-    }, () => {});
+    if (document.visibilityState !== 'visible') return;
+
+    // PiP was closed while we were away (e.g. via its own close button).
+    if (needsFrameCheck && pipElement() !== needsFrameCheck) checkFramesAfterPip(needsFrameCheck);
+
+    if (!cfg || !cfg.closeOnReturn || !openedByUs) return;
+    // Chrome closes auto-opened PiP windows itself when the tab comes back.
+    // Give it a moment instead of racing it with a second exit, then close the
+    // window only if it's still open.
+    setTimeout(safe(() => {
+      if (document.visibilityState !== 'visible') return;
+      const el = pipElement();
+      if (!el || el !== openedByUs) return;
+      const wasPlaying = !el.paused;
+      reflectApply(nativeExitPiP, document, []).then(() => {
+        if (wasPlaying && el.paused && el.isConnected) el.play().catch(() => {});
+      }, () => {});
+    }), RETURN_EXIT_DELAY_MS);
   });
 
   // ---------------------------------------------------------------------------

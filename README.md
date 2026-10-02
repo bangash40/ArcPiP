@@ -96,9 +96,12 @@ URL for the permission page, so the docs give the menu path instead.
    the site), the site's handlers are restored. If Chrome fires the handler while the chosen video is muted (for
    example during a video call on Meet), ArcPiP hands the call to the site's own handler. Handlers are also
    re-applied every few seconds while a video plays, in case a site bypasses the wrapper.
-5. **Coming back.** On `visibilitychange` to visible, if ArcPiP opened the PiP window, it calls
-   `document.exitPictureInPicture()` and resumes playback if the exit paused the video. PiP windows you opened
-   yourself are left alone.
+5. **Coming back.** Chrome usually closes an auto-opened PiP window itself when you return to the tab. ArcPiP waits
+   about 350 ms rather than racing it, then calls `document.exitPictureInPicture()` only if the window is still open,
+   and resumes playback if the exit paused the video. PiP windows you opened yourself are left alone. Once the window
+   closes, ArcPiP checks with `requestVideoFrameCallback` that the inline video is drawing frames again. If it's
+   playing but blank (audio only), ArcPiP re-seeks in place to force a fresh frame, which restores the picture
+   without a reload.
 6. **Dynamic pages.** It re-detects videos on `yt-navigate-finish`, `history.pushState`/`replaceState`, `popstate`,
    `hashchange`, bfcache `pageshow`, a debounced `MutationObserver`, `play`/`loadedmetadata` capture listeners and a
    throttled scan of open shadow roots.
@@ -208,6 +211,7 @@ in the same window.
 
 **YouTube** (`youtube.com/watch?...`)
 - [ ] Normal video: auto pop-out on switch, pop-in on return.
+- [ ] After returning, the **picture** is back in the page, not just the audio. Repeat 5 times, including staying away for 30+ seconds.
 - [ ] Next video: the PiP Next button works (with autoplay on, or in a playlist).
 - [ ] Playlist: Next goes to the next playlist item. Pop-out still works after the page navigates.
 - [ ] Theater mode and fullscreen: pop-out works. Fullscreen exits first, which is Chrome behavior.
