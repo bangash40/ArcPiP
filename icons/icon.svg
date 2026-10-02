@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6d5dfc"/>
+      <stop offset="1" stop-color="#e2557b"/>
+    </linearGradient>
+  </defs>
+  <!-- Tile -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)"/>
+  <!-- Main window -->
+  <rect x="20" y="30" width="88" height="68" rx="12" fill="none" stroke="#fff" stroke-width="9" stroke-opacity="0.9"/>
+  <!-- Floating mini player -->
+  <rect x="60" y="62" width="56" height="40" rx="9" fill="#fff"/>
+  <!-- Play glyph -->
+  <path d="M82 72 L97 82 L82 92 Z" fill="#8a4fd8"/>
+</svg>
