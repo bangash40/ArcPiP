@@ -533,10 +533,13 @@
       const next = readSettings(msg.settings);
       if (!next) return;
       cfg = next;
+      lastReported = ''; // a (possibly new) bridge is listening: re-report state
       log('settings', cfg);
       scheduleRescan(true);
       refresh();
     } else if (msg.type === 'toggle' && typeof msg.id === 'string' && msg.id.length < 64) {
+      // Synchronous ack tells the injected caller that this engine is present.
+      sendToIsolated({ type: 'toggle-ack', id: msg.id });
       manualToggle(msg.id, msg.mode === 'targeted' ? 'targeted' : 'broadcast');
     }
   });

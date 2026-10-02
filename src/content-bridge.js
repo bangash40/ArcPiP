@@ -16,8 +16,12 @@
 (() => {
   'use strict';
 
-  if (globalThis.__arcpipBridgeLoaded) return;
-  globalThis.__arcpipBridgeLoaded = true;
+  // Skip if a live bridge is already here; replace one orphaned by an
+  // extension reload/update (its chrome.runtime is gone).
+  try {
+    if (typeof globalThis.__arcpipBridgeAlive === 'function' && globalThis.__arcpipBridgeAlive()) return;
+  } catch {}
+  globalThis.__arcpipBridgeAlive = () => extensionAlive();
 
   const S = globalThis.ArcPiPSettings;
   if (!S) return;
