@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ArcPiP</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="top">
+    <img src="../../icons/icon-32.png" width="22" height="22" alt="">
+    <h1>ArcPiP</h1>
+    <label class="switch" title="Turn ArcPiP on or off everywhere">
+      <input type="checkbox" id="enabled" aria-label="ArcPiP enabled">
+      <span class="track"><span class="thumb"></span></span>
+    </label>
+  </header>
+
+  <section class="status" id="status" data-state="idle" aria-live="polite">
+    <span class="dot" aria-hidden="true"></span>
+    <div>
+      <div class="status-title" id="statusTitle">Checking this tab…</div>
+      <div class="status-sub" id="statusSub"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="row">
+      <span class="label" id="siteLabel">Enabled on this site</span>
+      <label class="switch small">
+        <input type="checkbox" id="siteEnabled" aria-labelledby="siteLabel">
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </div>
+    <div class="row">
+      <span class="label">Skip back</span>
+      <span class="num"><input type="number" id="skipBack" min="1" max="300" step="1" aria-label="Skip back seconds"><em>s</em></span>
+    </div>
+    <div class="row">
+      <span class="label">Skip forward</span>
+      <span class="num"><input type="number" id="skipForward" min="1" max="300" step="1" aria-label="Skip forward seconds"><em>s</em></span>
+    </div>
+  </section>
+
+  <button class="primary" id="popOut">
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="11" width="9" height="7" rx="1.5" fill="currentColor"/></svg>
+    <span>Pop out now</span>
+    <kbd id="shortcut">Alt+P</kbd>
+  </button>
+  <div class="msg" id="msg" role="status"></div>
+
+  <footer>
+    <a href="#" id="openOptions">Setup &amp; help</a>
+    <span class="sep">·</span>
+    <a href="#" id="openShortcuts">Change shortcut</a>
+  </footer>
+
+  <script src="../shared/settings.js"></script>
+  <script src="../shared/pip-toggle.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

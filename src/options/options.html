@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArcPiP Settings</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<div class="page">
+  <header class="hero">
+    <img src="../../icons/icon-128.png" width="56" height="56" alt="">
+    <div>
+      <h1>ArcPiP</h1>
+      <p>Arc's mini player for Chrome. Playing videos pop out when you switch tabs and pop back in when you return.</p>
+    </div>
+  </header>
+
+  <div class="banner" id="welcome" hidden>
+    <strong>Thanks for installing ArcPiP!</strong>
+    Two quick steps below and you're set. Tabs that were already open may need a reload.
+  </div>
+
+  <!-- ===================== Setup ===================== -->
+  <section class="card" aria-labelledby="setupTitle">
+    <h2 id="setupTitle">Setup</h2>
+
+    <div class="check" id="versionCheck" data-state="pending">
+      <span class="check-icon" aria-hidden="true"></span>
+      <div>
+        <div class="check-title" id="versionTitle">Checking your Chrome version…</div>
+        <div class="check-sub" id="versionSub"></div>
+      </div>
+    </div>
+
+    <ol class="steps">
+      <li>
+        <h3>Allow "Automatic picture-in-picture" on your video sites</h3>
+        <p>Chrome asks for permission before a site may pop a video out on its own. For each site you use
+          (YouTube, Twitch, Vimeo…):</p>
+        <ol class="substeps">
+          <li>Open the site in a tab.</li>
+          <li>Click the <b>site information</b> icon at the left end of the address bar
+            <span class="glyph" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </span>.</li>
+          <li>Find <b>Automatic picture-in-picture</b> and set it to <b>Allow</b>. If it isn't listed,
+            open <b>Site settings</b> from the same menu and change it there.</li>
+        </ol>
+        <p>Alternatively, the first time a video pops out, Chrome shows a prompt. Choose to allow it on every visit.
+          You can review all sites under Settings → Privacy and security → Site settings → Additional permissions →
+          Automatic picture-in-picture.</p>
+        <button class="ghost" data-open="chrome://settings/content">Open Chrome site settings</button>
+      </li>
+      <li>
+        <h3>Play a video and switch tabs</h3>
+        <p>When ArcPiP is armed, the toolbar icon shows a <span class="badge">PiP</span> badge. Switch to another tab
+          and the video floats above every app, even with Chrome minimized. Come back and it pops back in.</p>
+        <p class="hint">Tip: pin ArcPiP from the puzzle-piece menu so you can see the badge.</p>
+      </li>
+    </ol>
+
+    <details class="trouble">
+      <summary>Nothing pops out? Troubleshooting</summary>
+      <ul>
+        <li><b>The video must be playing with sound.</b> Chrome only pops out media that was audible in the last
+          couple of seconds. Muted or paused videos stay put.</li>
+        <li><b>It must be in the main page.</b> Chrome doesn't auto-pop videos inside embedded iframes (for example
+          a YouTube embed on a blog). Use <b>Pop out now</b> or the keyboard shortcut for those.</li>
+        <li><b>Permission.</b> Make sure the site isn't set to Block for Automatic picture-in-picture (step 1).
+          Without an explicit Allow, Chrome only allows sites you use often.</li>
+        <li><b>Older or staged rollouts.</b> On Chrome 134+ the feature is normally on. If your browser doesn't have it,
+          set <code>chrome://flags/#auto-picture-in-picture-for-video-playback</code> to <i>Enabled</i> and relaunch.
+          Flag names can change between versions.
+          <button class="link" data-open="chrome://flags/#auto-picture-in-picture-for-video-playback">Open flag</button></li>
+        <li><b>Tabs opened before install.</b> Reload them once.</li>
+        <li><b>Shortcut doesn't work?</b> Another extension may own <kbd>Alt+P</kbd>.
+          <button class="link" data-open="chrome://extensions/shortcuts">Change shortcut</button></li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- ===================== Behavior ===================== -->
+  <section class="card" aria-labelledby="behaviorTitle">
+    <h2 id="behaviorTitle">Behavior</h2>
+
+    <div class="setting">
+      <div><div class="setting-title">ArcPiP enabled</div><div class="setting-sub">Master switch for automatic pop-out.</div></div>
+      <label class="switch"><input type="checkbox" id="enabled" aria-label="ArcPiP enabled"><span class="track"><span class="thumb"></span></span></label>
+    </div>
+    <div class="setting">
+      <div><div class="setting-title">Close PiP when returning to the tab</div><div class="setting-sub">The video pops back into the page and keeps playing, like Arc.</div></div>
+      <label class="switch"><input type="checkbox" id="closeOnReturn" aria-label="Close PiP when returning to the tab"><span class="track"><span class="thumb"></span></span></label>
+    </div>
+    <div class="setting">
+      <div><div class="setting-title">Don't pop out during ads</div><div class="setting-sub">Best effort on YouTube, YouTube Music and Twitch.</div></div>
+      <label class="switch"><input type="checkbox" id="skipAds" aria-label="Don't pop out during ads"><span class="track"><span class="thumb"></span></span></label>
+    </div>
+    <div class="setting">
+      <div><div class="setting-title">Force PiP on sites that block it</div><div class="setting-sub">Removes the <code>disablePictureInPicture</code> attribute from videos. May break some players.</div></div>
+      <label class="switch"><input type="checkbox" id="forcePip" aria-label="Force PiP on sites that block it"><span class="track"><span class="thumb"></span></span></label>
+    </div>
+    <div class="setting">
+      <div><div class="setting-title">Skip back / skip forward</div><div class="setting-sub">Seconds jumped by the PiP window's seek buttons.</div></div>
+      <div class="nums">
+        <label class="num"><span class="sr">Skip back seconds</span><input type="number" id="skipBack" min="1" max="300"><em>s</em></label>
+        <label class="num"><span class="sr">Skip forward seconds</span><input type="number" id="skipForward" min="1" max="300"><em>s</em></label>
+      </div>
+    </div>
+    <div class="setting">
+      <div><div class="setting-title">Debug logging</div><div class="setting-sub">Logs decisions to the page console as <code>[ArcPiP]</code>.</div></div>
+      <label class="switch"><input type="checkbox" id="debug" aria-label="Debug logging"><span class="track"><span class="thumb"></span></span></label>
+    </div>
+    <div class="setting">
+      <div><div class="setting-title">Keyboard shortcut</div><div class="setting-sub">Toggles PiP on the current tab, including embedded players.</div></div>
+      <div class="shortcut"><kbd id="shortcut">Not set</kbd><button class="ghost small" data-open="chrome://extensions/shortcuts">Change</button></div>
+    </div>
+  </section>
+
+  <!-- ===================== Sites ===================== -->
+  <section class="card" aria-labelledby="sitesTitle">
+    <h2 id="sitesTitle">Sites</h2>
+
+    <fieldset class="policy">
+      <legend class="sr">Default site policy</legend>
+      <label><input type="radio" name="policy" value="allow"> <span><b>All sites</b>, except the ones you block</span></label>
+      <label><input type="radio" name="policy" value="block"> <span><b>Only sites you allow</b></span></label>
+    </fieldset>
+
+    <form class="add" id="addForm" autocomplete="off">
+      <label class="sr" for="hostInput">Website</label>
+      <input id="hostInput" type="text" placeholder="e.g. youtube.com" spellcheck="false">
+      <label class="sr" for="ruleInput">Rule</label>
+      <select id="ruleInput">
+        <option value="allow">Allow</option>
+        <option value="block">Block</option>
+      </select>
+      <button type="submit" class="primary">Add</button>
+    </form>
+    <div class="form-msg" id="formMsg" role="status"></div>
+
+    <ul class="rules" id="rules"></ul>
+    <p class="empty" id="rulesEmpty">No site rules yet. A rule for <code>youtube.com</code> also covers <code>music.youtube.com</code> unless that has its own rule.</p>
+  </section>
+
+  <section class="card" aria-labelledby="howTitle">
+    <h2 id="howTitle">How it works</h2>
+    <p>Chrome 134 added <em>automatic picture-in-picture for media playback</em>: if a page registers a Media Session
+      <code>enterpictureinpicture</code> handler, Chrome calls it when you switch away from a tab with a playing,
+      audible video. ArcPiP registers that handler on every site for the best video on the page, adds skip
+      back/forward buttons to the PiP window, and closes the window when you come back. Site features like YouTube's
+      next-video button keep working.</p>
+    <p class="hint">ArcPiP has no servers, analytics or remote code. Settings sync through your Chrome profile.</p>
+  </section>
+
+  <footer class="foot">ArcPiP <span id="version"></span></footer>
+</div>
+
+<script src="../shared/settings.js"></script>
+<script src="options.js"></script>
+</body>
+</html>
