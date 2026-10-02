@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArcPiP Test Bench</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0f0f14; --panel: #191922; --line: #2a2a36; --text: #ececf1; --muted: #9a9aab;
+    --accent: #8b7bff; --ok: #3ecf8e; --warn: #f5a623;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 0 0 8px; }
+  p, li { color: var(--muted); }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 16px 0; }
+  video { display: block; background: #000; border-radius: 8px; max-width: 100%; }
+  #mainWrap video { width: 100%; aspect-ratio: 16 / 9; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+  button, select, label.file { background: #24243a; color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; font: inherit; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 99px; background: #2a2a40; color: var(--muted); }
+  .tag.ok { background: rgba(62, 207, 142, .15); color: var(--ok); }
+  .tag.warn { background: rgba(245, 166, 35, .15); color: var(--warn); }
+  #log { height: 180px; overflow: auto; background: #0b0b10; border-radius: 8px; padding: 8px; font: 12px/1.6 ui-monospace, Consolas, monospace; color: #c9c9d6; }
+  iframe { width: 100%; aspect-ratio: 16 / 10; border: 1px solid var(--line); border-radius: 8px; background: #000; }
+  body.embed main { padding: 8px; }
+  body.embed .full-only { display: none; }
+  code { background: #24243a; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <header class="full-only">
+    <h1>ArcPiP Test Bench</h1>
+    <p>Play the main video, then switch to another tab. With ArcPiP and Chrome's
+      <em>Automatic picture-in-picture</em> site permission allowed, it should pop out, then pop back in when you return.
+      Serve this page over http (for example <code>python -m http.server</code>) or enable
+      "Allow access to file URLs" for ArcPiP.</p>
+  </header>
+
+  <section>
+    <h2>Main player <span class="tag" id="srcTag">generated</span></h2>
+    <div class="row">
+      <select id="source" aria-label="Video source">
+        <option value="generated">Generated (canvas + tone, audible, live)</option>
+        <option value="sample">MDN CC0 sample (seekable, may be silent)</option>
+      </select>
+      <label class="file">Load local file… <input type="file" id="file" accept="video/*" hidden></label>
+      <button id="play">Play</button>
+      <button id="pause">Pause</button>
+      <button id="toggleAd" class="full-only" title="Adds YouTube's ad-showing class to the player wrapper">Simulate ad: off</button>
+    </div>
+    <div id="mainWrap" class="html5-video-player">
+      <video id="main" controls playsinline></video>
+    </div>
+  </section>
+
+  <section class="full-only">
+    <h2>Status</h2>
+    <div class="row">
+      <span class="tag" id="visTag">visible</span>
+      <span class="tag" id="pipTag">no PiP</span>
+      <span class="tag" id="msTag"></span>
+    </div>
+    <div id="log" role="log" aria-live="polite"></div>
+  </section>
+
+  <section class="full-only">
+    <h2>Single-page navigation</h2>
+    <p>Replaces the main <code>&lt;video&gt;</code> element and calls <code>history.pushState</code>, like YouTube/Twitch do.
+      Play the new video and switch tabs: auto-PiP should still work.</p>
+    <div class="row">
+      <button id="spaSwap">Swap video + pushState</button>
+      <button id="siteNext">Register site "nexttrack" handler</button>
+      <button id="siteEnter">Register site "enterpictureinpicture" handler</button>
+    </div>
+  </section>
+
+  <section class="full-only">
+    <h2>Videos ArcPiP should ignore</h2>
+    <div class="grid">
+      <div>
+        <p><span class="tag">background</span> Muted, looping, autoplaying hero video.</p>
+        <video id="bg" muted loop autoplay playsinline style="width:100%"></video>
+      </div>
+      <div>
+        <p><span class="tag">tiny</span> 160px wide (below the 200px threshold).</p>
+        <video id="tiny" controls playsinline style="width:160px"></video>
+      </div>
+      <div>
+        <p><span class="tag warn">blocked</span> Has <code>disablePictureInPicture</code>. Popped out only with "Force PiP".</p>
+        <video id="blocked" controls playsinline disablepictureinpicture style="width:100%"></video>
+      </div>
+    </div>
+  </section>
+
+  <section class="full-only">
+    <h2>Embedded iframe player</h2>
+    <p>Same page loaded with <code>?embed=1</code>. Chrome only auto-pops media in the <strong>top frame</strong>, so embeds can
+      be popped out manually (Alt+P or the popup button) but not automatically.</p>
+    <iframe id="frame" title="Embedded test player" loading="lazy"></iframe>
+  </section>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const params = new URLSearchParams(location.search);
+  const EMBED = params.get('embed') === '1';
+  if (EMBED) document.body.classList.add('embed');
+
+  const SAMPLE_URL = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+  const $ = (id) => document.getElementById(id);
+  const logEl = $('log');
+
+  function log(msg) {
+    if (!logEl) return;
+    const line = document.createElement('div');
+    line.textContent = `${new Date().toLocaleTimeString()}  ${msg}`;
+    logEl.prepend(line);
+  }
+
+  // --- Generated media: animated canvas + gentle tone, so it is "audible" ---
+  let audioCtx = null;
+  function generatedStream(label, hue, withAudio) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 640; canvas.height = 360;
+    const ctx = canvas.getContext('2d');
+    const start = performance.now();
+    (function draw(now) {
+      const t = (now - start) / 1000;
+      ctx.fillStyle = `hsl(${(hue + t * 20) % 360} 55% 18%)`;
+      ctx.fillRect(0, 0, 640, 360);
+      ctx.fillStyle = `hsl(${(hue + 180 + t * 20) % 360} 80% 65%)`;
+      ctx.beginPath();
+      ctx.arc(320 + Math.cos(t * 1.3) * 220, 180 + Math.sin(t * 1.7) * 120, 34, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 34px system-ui, sans-serif';
+      ctx.fillText(label, 24, 52);
+      ctx.font = '26px ui-monospace, monospace';
+      ctx.fillText(t.toFixed(1) + 's', 24, 336);
+      requestAnimationFrame(draw);
+    })(start);
+    const stream = canvas.captureStream(30);
+    if (withAudio) {
+      audioCtx = audioCtx || new AudioContext();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      const lfo = audioCtx.createOscillator();
+      const lfoGain = audioCtx.createGain();
+      osc.frequency.value = 330;
+      gain.gain.value = 0.03;              // quiet, but audible to Chrome
+      lfo.frequency.value = 0.5; lfoGain.gain.value = 0.02;
+      lfo.connect(lfoGain).connect(gain.gain);
+      const dest = audioCtx.createMediaStreamDestination();
+      osc.connect(gain).connect(dest);
+      osc.start(); lfo.start();
+      stream.addTrack(dest.stream.getAudioTracks()[0]);
+    }
+    return stream;
+  }
+
+  function setSource(video, kind, label, hue) {
+    video.removeAttribute('src');
+    video.srcObject = null;
+    if (kind === 'generated') video.srcObject = generatedStream(label, hue, !video.muted);
+    else if (kind === 'sample') { video.src = SAMPLE_URL; video.loop = true; }
+    $('srcTag') && video.id === 'main' && ($('srcTag').textContent = kind);
+  }
+
+  let main = $('main');
+  setSource(main, 'generated', EMBED ? 'Embedded player' : 'Main player', 250);
+
+  $('source').addEventListener('change', (e) => setSource(main, e.target.value, 'Main player', 250));
+  $('file').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    main.srcObject = null;
+    main.src = URL.createObjectURL(f);
+    $('srcTag').textContent = 'local file';
+  });
+  $('play').addEventListener('click', () => { audioCtx && audioCtx.resume(); main.play().catch((err) => log('play() failed: ' + err.name)); });
+  $('pause').addEventListener('click', () => main.pause());
+
+  let ad = false;
+  $('toggleAd').addEventListener('click', (e) => {
+    ad = !ad;
+    $('mainWrap').classList.toggle('ad-showing', ad);
+    e.target.textContent = 'Simulate ad: ' + (ad ? 'on' : 'off');
+    log('ad-showing ' + (ad ? 'added' : 'removed'));
+  });
+
+  if (!EMBED) {
+    const bg = $('bg'); setSource(bg, 'generated', 'Background', 120); bg.play().catch(() => {});
+    setSource($('tiny'), 'generated', 'Tiny', 40);
+    setSource($('blocked'), 'generated', 'Blocked', 0);
+    $('frame').src = location.pathname + '?embed=1';
+  }
+
+  // --- SPA swap: new <video> element + pushState ---
+  let swaps = 0;
+  $('spaSwap').addEventListener('click', () => {
+    swaps++;
+    const fresh = document.createElement('video');
+    fresh.id = 'main'; fresh.controls = true; fresh.playsInline = true;
+    main.pause();
+    main.replaceWith(fresh);
+    main = fresh;
+    wire(main);
+    setSource(main, 'generated', 'SPA video #' + swaps, (swaps * 70) % 360);
+    history.pushState({ swaps }, '', '?v=' + swaps);
+    log('swapped <video> and pushState ?v=' + swaps);
+  });
+
+  $('siteNext').addEventListener('click', () => {
+    try {
+      navigator.mediaSession.setActionHandler('nexttrack', () => { log('site nexttrack handler called'); $('spaSwap').click(); main.play(); });
+      log('site registered nexttrack (PiP window should show a Next button)');
+    } catch (err) { log('nexttrack failed: ' + err.message); }
+  });
+  $('siteEnter').addEventListener('click', () => {
+    try {
+      navigator.mediaSession.setActionHandler('enterpictureinpicture', () => log('SITE enterpictureinpicture handler called'));
+      log('site registered enterpictureinpicture (ArcPiP keeps its own while active)');
+    } catch (err) { log('enterpictureinpicture failed: ' + err.message); }
+  });
+
+  // --- Status ---
+  function wire(v) {
+    for (const t of ['play', 'pause', 'enterpictureinpicture', 'leavepictureinpicture']) {
+      v.addEventListener(t, () => { log(`#${v.id} ${t}`); status(); });
+    }
+  }
+  wire(main);
+  function status() {
+    const vis = $('visTag'), pip = $('pipTag'), ms = $('msTag');
+    if (!vis) return;
+    vis.textContent = document.visibilityState;
+    pip.textContent = document.pictureInPictureElement ? 'in PiP: #' + document.pictureInPictureElement.id : 'no PiP';
+    pip.className = 'tag' + (document.pictureInPictureElement ? ' ok' : '');
+    ms.textContent = 'mediaSession: ' + ('mediaSession' in navigator ? 'yes' : 'no') +
+      ' · PiP API: ' + (document.pictureInPictureEnabled ? 'yes' : 'no');
+  }
+  document.addEventListener('visibilitychange', () => { log('visibility ' + document.visibilityState); status(); });
+  status();
+})();
+</script>
+</body>
+</html>
