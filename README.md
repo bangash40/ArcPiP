@@ -277,13 +277,13 @@ in the same window.
 The store wants a `.zip` with `manifest.json` at its root. From a clean checkout:
 
 ```bash
-git archive --format=zip -o arcpip-1.0.0.zip HEAD manifest.json src icons
+git archive --format=zip -o arcpip-1.0.1.zip HEAD manifest.json src icons
 ```
 
 Or in PowerShell:
 
 ```powershell
-Compress-Archive -Path manifest.json, src, icons -DestinationPath arcpip-1.0.0.zip -Force
+Compress-Archive -Path manifest.json, src, icons -DestinationPath arcpip-1.0.1.zip -Force
 ```
 
 Then:

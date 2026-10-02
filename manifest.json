@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ArcPiP",
   "short_name": "ArcPiP",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Arc-style mini player: playing videos pop out into Picture-in-Picture when you switch tabs, and pop back in when you return.",
   "minimum_chrome_version": "111",
   "icons": {
